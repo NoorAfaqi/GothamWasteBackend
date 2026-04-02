@@ -1,5 +1,5 @@
-const serverless = require("serverless-http");
-const app = require("./app");
-
-// Serverless function entrypoint (AWS Lambda / compatible platforms).
-module.exports.handler = serverless(app);
+/**
+ * Legacy serverless entry (e.g. AWS). Vercel auto-detects src/app.js — no config needed.
+ */
+require("./config/env");
+module.exports = require("./app");

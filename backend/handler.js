@@ -1,1 +1,1 @@
-module.exports = require("./src/handler");
+module.exports = require("./src/app");

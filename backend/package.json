@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "node server.js",
-    "start:serverless": "node -e \"const h=require('./handler'); console.log('serverless handler ready:', typeof h.handler);\"",
+    "start:serverless": "node -e \"const app=require('./src/app'); console.log('express app:', typeof app);\"",
     "test": "node scripts/smoke-api.js",
     "test:api": "node scripts/smoke-api.js"
   },
