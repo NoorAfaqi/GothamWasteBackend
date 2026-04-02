@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "start": "node server.js",
+    "start:serverless": "node -e \"const h=require('./handler'); console.log('serverless handler ready:', typeof h.handler);\"",
+    "test": "node scripts/smoke-api.js",
+    "test:api": "node scripts/smoke-api.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.0",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.7.0",
+    "serverless-http": "^4.0.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "supertest": "^7.2.2"
+  }
+}

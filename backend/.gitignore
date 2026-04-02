@@ -1,0 +1,15 @@
+node_modules/
+
+# Environment files — backend root and any subdirectory
+.env
+.env.*
+**/.env
+**/.env.*
+.envrc
+**/.envrc
+!.env.example
+!.env.sample
+!**/.env.example
+!**/.env.sample
+
+*-firebase-adminsdk-*.json
