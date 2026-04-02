@@ -1,4 +1,6 @@
 {
+  "name": "gotham-waste-backend",
+  "main": "index.js",
   "scripts": {
     "start": "node server.js",
     "start:serverless": "node -e \"const app=require('./src/app'); console.log('express app:', typeof app);\"",
