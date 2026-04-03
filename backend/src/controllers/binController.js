@@ -1,4 +1,12 @@
 const BinModel = require("../models/binModel");
+const LogsModel = require("../models/logsModel");
+
+function getStatusForLog(value) {
+  if (value && typeof value === "object" && value.binStatus !== undefined) {
+    return value.binStatus;
+  }
+  return value;
+}
 
 const BinController = {
   // GET /api/bins
@@ -35,6 +43,10 @@ const BinController = {
       }
 
       const updated = await BinModel.updateValue(binName, value);
+      await LogsModel.create({
+        binName,
+        status: getStatusForLog(value),
+      });
       res.json({ success: true, message: `${binName} updated`, data: updated });
     } catch (err) {
       res.status(500).json({ success: false, message: err.message });
@@ -51,11 +63,31 @@ const BinController = {
       }
 
       const updated = await BinModel.updateMany(updates);
+      await Promise.all(
+        Object.entries(updates).map(([binName, value]) =>
+          LogsModel.create({
+            binName,
+            status: getStatusForLog(value),
+          })
+        )
+      );
       res.json({ success: true, message: "Bins updated", data: updated });
     } catch (err) {
       res.status(500).json({ success: false, message: err.message });
     }
   },
+
+  // DELETE /api/bins/:binName
+  async deleteBin(req, res) {
+    try {
+      const { binName } = req.params;
+      const bin = await BinModel.deleteOne(binName);
+      res.json({ success: true, message: "Bin deleted", data: { binName: bin.binName } });
+    } catch (err) {
+      res.status(500).json({ success: false, message: `Error deleting bin: ${err.message}` });
+    }
+  },
+
 };
 
 module.exports = BinController;

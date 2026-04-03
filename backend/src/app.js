@@ -2,6 +2,7 @@ require("./config/env");
 const express = require("express");
 const cors = require("cors");
 const binRoutes = require("./routes/binRoutes");
+const logsRoutes = require("./routes/logsRoutes");
 const healthRoutes = require("./routes/healthRoutes");
 const docsRoutes = require("./routes/docsRoutes");
 const openApiSpec = require("./docs/openapi");
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
     service: "gotham-waste-backend",
     health: "/health",
     bins: "/api/bins",
+    logs: "/api/logs",
     apiDocs: "/api-docs",
     openApiJson: "/openapi.json",
   });
@@ -32,5 +34,6 @@ app.get("/", (req, res) => {
 
 app.use("/health", healthRoutes);
 app.use("/api/bins", binRoutes);
+app.use("/api/logs", logsRoutes);
 
 module.exports = app;

@@ -19,6 +19,7 @@ const openApiSpec = {
     { name: "Root", description: "Service metadata" },
     { name: "Health", description: "Configuration and readiness" },
     { name: "Bins", description: "Bin CRUD under Realtime Database `Bins`" },
+    { name: "Logs", description: "Log operations under Realtime Database `Logs`" },
   ],
   paths: {
     "/": {
@@ -36,6 +37,7 @@ const openApiSpec = {
                   service: "gotham-waste-backend",
                   health: "/health",
                   bins: "/api/bins",
+                  logs: "/api/logs",
                   apiDocs: "/api-docs",
                 },
               },
@@ -241,6 +243,155 @@ const openApiSpec = {
         },
       },
     },
+    "/api/logs": {
+      get: {
+        tags: ["Logs"],
+        summary: "List all logs",
+        operationId: "getAllLogs",
+        responses: {
+          200: {
+            description: "Logs keyed by push id",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/LogsListSuccess" },
+              },
+            },
+          },
+          404: {
+            description: "No logs found",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/ErrorMessage" },
+              },
+            },
+          },
+          500: {
+            description: "Server error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/BinError" },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ["Logs"],
+        summary: "Create one log entry",
+        description:
+          "Creates a log under `Logs/{pushKey}`. Stored shape is `{ timestamp, status }` where status becomes `\"{binName} is {status}\"`.",
+        operationId: "createLog",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/LogCreateBody" },
+              examples: {
+                status: {
+                  value: { binName: "Bin1", status: "full" },
+                },
+                binStatus: {
+                  value: { binName: "Bin1", binStatus: "full" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Created",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/LogCreateSuccess" },
+              },
+            },
+          },
+          500: {
+            description: "Validation/server error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/BinError" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/logs/{logId}": {
+      delete: {
+        tags: ["Logs"],
+        summary: "Delete one log by push key",
+        operationId: "deleteLog",
+        parameters: [
+          {
+            name: "logId",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+            description: "Firebase push key under `Logs`",
+          },
+        ],
+        responses: {
+          200: {
+            description: "Deleted",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/LogDeleteSuccess" },
+              },
+            },
+          },
+          500: {
+            description: "Server error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/BinError" },
+              },
+            },
+          },
+        },
+      },
+      patch: {
+        tags: ["Logs"],
+        summary: "Patch one log by push key",
+        operationId: "patchLog",
+        parameters: [
+          {
+            name: "logId",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+            description: "Firebase push key under `Logs`",
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/LogPatchBody" },
+              example: { status: "Bin1 is empty" },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Patched",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/LogPatchSuccess" },
+              },
+            },
+          },
+          500: {
+            description: "Server error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/BinError" },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -250,6 +401,7 @@ const openApiSpec = {
           service: { type: "string" },
           health: { type: "string" },
           bins: { type: "string" },
+          logs: { type: "string" },
           apiDocs: { type: "string" },
         },
       },
@@ -340,6 +492,84 @@ const openApiSpec = {
           success: { type: "boolean", example: true },
           message: { type: "string" },
           data: { type: "object", additionalProperties: true },
+        },
+      },
+      LogsListSuccess: {
+        type: "object",
+        properties: {
+          success: { type: "boolean", example: true },
+          data: {
+            type: "object",
+            additionalProperties: {
+              type: "object",
+              properties: {
+                timestamp: { type: "string", example: "2026/04/03 10:22:01:1230" },
+                status: { type: "string", example: "Bin1 is full" },
+              },
+            },
+          },
+        },
+      },
+      LogCreateBody: {
+        type: "object",
+        required: ["binName"],
+        properties: {
+          binName: { type: "string", example: "Bin1" },
+          status: { type: "string", example: "full" },
+          binStatus: { type: "string", example: "full" },
+        },
+        description: "Provide `status` or `binStatus`.",
+      },
+      LogCreateSuccess: {
+        type: "object",
+        properties: {
+          success: { type: "boolean", example: true },
+          message: { type: "string", example: "Log created" },
+          data: {
+            type: "object",
+            properties: {
+              logId: { type: "string" },
+              log: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  timestamp: { type: "string" },
+                  status: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+      },
+      LogDeleteSuccess: {
+        type: "object",
+        properties: {
+          success: { type: "boolean", example: true },
+          message: { type: "string", example: "Log deleted" },
+          data: {
+            type: "object",
+            properties: {
+              logId: { type: "string" },
+            },
+          },
+        },
+      },
+      LogPatchBody: {
+        type: "object",
+        additionalProperties: true,
+        description: "Fields to patch on a log node.",
+      },
+      LogPatchSuccess: {
+        type: "object",
+        properties: {
+          success: { type: "boolean", example: true },
+          message: { type: "string", example: "Log patched" },
+          data: {
+            type: "object",
+            properties: {
+              logId: { type: "string" },
+            },
+          },
         },
       },
     },
