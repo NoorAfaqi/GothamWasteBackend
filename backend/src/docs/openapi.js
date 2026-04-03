@@ -205,7 +205,7 @@ const openApiSpec = {
               examples: {
                 object: {
                   summary: "Object payload",
-                  value: { value: { binStatus: "full" } },
+                  value: { "value": "half-full" },
                 },
                 string: {
                   summary: "String payload",
